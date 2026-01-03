@@ -56,6 +56,17 @@ storage/                        # 数据、上传、备份目录
 4. 保存后，启动 phpstudy 的 Web 服务（Apache/Nginx 均可）。首次访问任意接口会自动建表，无需手动导入 SQL。
 5. 参考下方“快速开始”创建管理员并调用接口。
 
+### Windows 快速运行指引（配合 phpstudy）
+1. **获取代码**：将项目下载/解压到 phpstudy 站点目录（例如 `C:\phpstudy_pro\WWW\mental-treehole`），并在站点设置里把运行目录设为 `public`。
+2. **启动服务**：在 phpstudy 中启动 Apache/Nginx 及 MySQL（确保 MySQL 端口与 `config.php` 一致）。
+3. **配置数据库**：在 phpstudy 的 MySQL 管理或 phpMyAdmin 中创建 `mental_treehole` 数据库，并确认 `application/config/config.php` 中的主机、端口、用户名、密码填写正确（Windows 默认主机通常是 `127.0.0.1`）。
+4. **执行管理员初始化**（可选但推荐）：使用 phpstudy 提供的 PHP 运行命令行，或在 CMD/Powershell 中执行（路径按你的 PHP 版本调整）：
+   ```powershell
+   "C:\phpstudy_pro\Extensions\php\php7.4.3nts\php.exe" -r "require 'application/common/bootstrap.php'; (new app\service\AuthService())->registerAdmin('admin','Admin@123','super'); echo 'admin created';"
+   ```
+   若 phpstudy PHP 路径不同，请替换为面板显示的 PHP 可执行文件。
+5. **访问接口**：在浏览器打开 `http://localhost:端口/index.php?r=auth/captcha` 等路由（端口见 phpstudy 面板）；首次访问会自动建表。
+
 ## 快速开始
 1. **创建管理员**：在 CLI 中运行一次 PHP 片段注册管理员（示例）。
    ```bash
