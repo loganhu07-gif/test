@@ -39,6 +39,23 @@ storage/                        # 数据、上传、备份目录
 2. 编辑 `application/config/config.php` 中的 `db` 配置，写入主机、端口、库名、用户名、密码。
 3. 首次运行时会自动迁移创建所需表：`users`, `test_results`, `treehole_posts`, `captcha_tokens`。
 
+### 在 phpstudy 上运行（示例步骤）
+1. 使用 phpstudy 内置 MySQL，新建数据库 `mental_treehole`，并在“管理”里为 `root` 账户设置密码（例如 `root` 或你自定义的强密码）。
+2. 在 phpstudy 面板中添加站点，站点根目录指向项目的 `public/` 目录（或保持默认根目录并将 `public` 设为运行目录）。
+3. 打开 `application/config/config.php`，根据 phpstudy 的 MySQL 端口（默认 3306 或面板显示的端口）与密码，填写：
+   ```php
+   'db' => [
+       'host' => '127.0.0.1',
+       'port' => 3306,      // 若 phpstudy 指定其他端口，请同步修改
+       'database' => 'mental_treehole',
+       'username' => 'root',
+       'password' => '你的密码',
+       'charset' => 'utf8mb4',
+   ],
+   ```
+4. 保存后，启动 phpstudy 的 Web 服务（Apache/Nginx 均可）。首次访问任意接口会自动建表，无需手动导入 SQL。
+5. 参考下方“快速开始”创建管理员并调用接口。
+
 ## 快速开始
 1. **创建管理员**：在 CLI 中运行一次 PHP 片段注册管理员（示例）。
    ```bash
