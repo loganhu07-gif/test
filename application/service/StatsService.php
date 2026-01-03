@@ -3,6 +3,7 @@ namespace app\service;
 
 use app\model\TestResult;
 use app\model\TreeholePost;
+use app\common\Database;
 
 class StatsService
 {
@@ -17,14 +18,15 @@ class StatsService
 
     public function overview(): array
     {
+        $pdo = Database::connection();
         $tests = $this->tests->all();
         $posts = $this->treehole->all();
 
-        $totalTests = count($tests);
-        $avgScore = $totalTests ? array_sum(array_column($tests, 'score')) / $totalTests : 0;
-        $treeholeCount = count($posts);
-        $dailyTests = $this->groupByDate($tests, 'submitted_at');
-        $dailyPosts = $this->groupByDate($posts, 'created_at');
+        $totalTests = (int)$pdo->query('SELECT COUNT(*) FROM test_results')->fetchColumn();
+        $avgScore = (float)$pdo->query('SELECT IFNULL(AVG(score),0) FROM test_results')->fetchColumn();
+        $treeholeCount = (int)$pdo->query('SELECT COUNT(*) FROM treehole_posts')->fetchColumn();
+        $dailyTests = $this->groupByDate('test_results', 'submitted_at');
+        $dailyPosts = $this->groupByDate('treehole_posts', 'created_at');
         $topTags = $this->topTags($posts);
         $scoreDistribution = $this->scoreHistogram($tests);
 
@@ -39,20 +41,14 @@ class StatsService
         ];
     }
 
-    private function groupByDate(array $items, string $key): array
+    private function groupByDate(string $table, string $column): array
     {
+        $pdo = Database::connection();
         $grouped = [];
-        foreach ($items as $item) {
-            $date = substr($item[$key] ?? '', 0, 10);
-            if (!$date) {
-                continue;
-            }
-            if (!isset($grouped[$date])) {
-                $grouped[$date] = 0;
-            }
-            $grouped[$date]++;
+        $stmt = $pdo->query("SELECT DATE($column) as d, COUNT(*) as c FROM {$table} GROUP BY DATE($column) ORDER BY d ASC");
+        foreach ($stmt->fetchAll() as $row) {
+            $grouped[$row['d']] = (int)$row['c'];
         }
-        ksort($grouped);
         return $grouped;
     }
 

@@ -1,22 +1,28 @@
 <?php
 namespace app\model;
 
-use function app\common\read_json;
-use function app\common\write_json;
+use app\common\Database;
 
 class TreeholePost
 {
-    private string $storage = __DIR__ . '/../../storage/data/treehole_posts.json';
-
     public function all(): array
     {
-        return read_json($this->storage, []);
+        $pdo = Database::connection();
+        $stmt = $pdo->query('SELECT id, content, tags, created_at FROM treehole_posts ORDER BY id DESC');
+        return array_map(function ($row) {
+            $row['tags'] = $row['tags'] ? json_decode($row['tags'], true) : [];
+            return $row;
+        }, $stmt->fetchAll());
     }
 
     public function add(array $post): void
     {
-        $posts = $this->all();
-        $posts[] = $post;
-        write_json($this->storage, $posts);
+        $pdo = Database::connection();
+        $stmt = $pdo->prepare('INSERT INTO treehole_posts (content, tags, created_at) VALUES (:content, :tags, :created_at)');
+        $stmt->execute([
+            'content' => $post['content'],
+            'tags' => json_encode($post['tags'], JSON_UNESCAPED_UNICODE),
+            'created_at' => $post['created_at'],
+        ]);
     }
 }

@@ -1,22 +1,25 @@
 <?php
 namespace app\model;
 
-use function app\common\read_json;
-use function app\common\write_json;
+use app\common\Database;
 
 class TestResult
 {
-    private string $storage = __DIR__ . '/../../storage/data/test_results.json';
-
     public function all(): array
     {
-        return read_json($this->storage, []);
+        $pdo = Database::connection();
+        $stmt = $pdo->query('SELECT id, answers, score, submitted_at FROM test_results ORDER BY id DESC');
+        return $stmt->fetchAll();
     }
 
     public function add(array $result): void
     {
-        $results = $this->all();
-        $results[] = $result;
-        write_json($this->storage, $results);
+        $pdo = Database::connection();
+        $stmt = $pdo->prepare('INSERT INTO test_results (answers, score, submitted_at) VALUES (:answers, :score, :submitted_at)');
+        $stmt->execute([
+            'answers' => json_encode($result['answers'], JSON_UNESCAPED_UNICODE),
+            'score' => $result['score'],
+            'submitted_at' => $result['submitted_at'],
+        ]);
     }
 }

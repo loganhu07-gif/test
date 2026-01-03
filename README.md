@@ -1,6 +1,6 @@
 # 大学生匿名心理测试与树洞系统（ThinkPHP5 示范版）
 
-本示例项目提供了基于 **ThinkPHP5 架构与 MVC 组织** 的匿名心理测评与树洞分享后台原型，涵盖验证码、加盐登录、图片上传、统计图表数据接口、分级权限的后台管理以及备份/恢复能力，便于二次开发与集成。
+本示例项目提供了基于 **ThinkPHP5 架构与 MVC 组织** 的匿名心理测评与树洞分享后台原型，涵盖验证码、加盐登录、图片上传、统计图表数据接口、分级权限的后台管理以及备份/恢复能力，便于二次开发与集成。当前版本改为 **MySQL 数据库存储**，包含自动建表迁移。
 
 ## 功能概览
 - **匿名心理测试**：提交问卷答案计算得分并留存历史。
@@ -26,10 +26,18 @@ application/
   common/                       # Bootstrap & 辅助函数
   config/config.php             # 基础配置（角色、上传限制、盐长度）
   controller/                   # MVC 控制器
-  model/                        # 数据模型（JSON 存储示例）
+  model/                        # 数据模型（MySQL 存储）
   service/                      # 业务服务（验证码、上传、统计、备份等）
 storage/                        # 数据、上传、备份目录
 ```
+
+## 数据库准备
+1. 在 MySQL 创建数据库（示例名 `mental_treehole`）并配置账号：
+   ```sql
+   CREATE DATABASE mental_treehole DEFAULT CHARACTER SET utf8mb4;
+   ```
+2. 编辑 `application/config/config.php` 中的 `db` 配置，写入主机、端口、库名、用户名、密码。
+3. 首次运行时会自动迁移创建所需表：`users`, `test_results`, `treehole_posts`, `captcha_tokens`。
 
 ## 快速开始
 1. **创建管理员**：在 CLI 中运行一次 PHP 片段注册管理员（示例）。

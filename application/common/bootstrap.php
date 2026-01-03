@@ -15,6 +15,7 @@ spl_autoload_register(function ($class) {
 });
 
 require_once __DIR__ . '/functions.php';
+require_once __DIR__ . '/Database.php';
 
 // Ensure storage directories exist.
 foreach ([

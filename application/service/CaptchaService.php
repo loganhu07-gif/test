@@ -1,10 +1,10 @@
 <?php
 namespace app\service;
 
+use app\common\Database;
+
 class CaptchaService
 {
-    private string $storage = __DIR__ . '/../../storage/data/captcha.json';
-
     public function generate(): array
     {
         $a = random_int(1, 9);
@@ -12,20 +12,27 @@ class CaptchaService
         $token = bin2hex(random_bytes(8));
         $answer = $a + $b;
         $payload = ['token' => $token, 'question' => "{$a} + {$b} = ?", 'answer' => $answer, 'created_at' => time()];
-        file_put_contents($this->storage, json_encode($payload));
+
+        $pdo = Database::connection();
+        $stmt = $pdo->prepare('REPLACE INTO captcha_tokens (token, answer, created_at) VALUES (:token, :answer, :created_at)');
+        $stmt->execute([
+            'token' => $token,
+            'answer' => $answer,
+            'created_at' => $payload['created_at'],
+        ]);
         return $payload;
     }
 
     public function verify(string $token, string $value): bool
     {
-        if (!file_exists($this->storage)) {
+        $pdo = Database::connection();
+        $stmt = $pdo->prepare('SELECT token, answer, created_at FROM captcha_tokens WHERE token = :token LIMIT 1');
+        $stmt->execute(['token' => $token]);
+        $saved = $stmt->fetch();
+        if (!$saved) {
             return false;
         }
-        $saved = json_decode(file_get_contents($this->storage), true);
-        if (!$saved || $saved['token'] !== $token) {
-            return false;
-        }
-        $expired = (time() - ($saved['created_at'] ?? 0)) > 300;
+        $expired = (time() - (int)$saved['created_at']) > 300;
         if ($expired) {
             return false;
         }
